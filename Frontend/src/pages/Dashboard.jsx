@@ -33,12 +33,12 @@ const Dashboard = ({ onLogout }) => {
       <main className="flex-grow pt-20 pb-12 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Welcome back, User</h1>
+            <h1 className="text-3xl font-bold mb-2">Welcome back!</h1>
             <p className="text-gray-400">Manage your complaints and track progress</p>
           </div>
 
           {/* Tabs */}
-          <div className="mb-8 border-b border-gray-800">
+          <div className="mb-0 border-b border-gray-800">
             <nav className="flex space-x-8">
               {["Raise a Complaint", "Analytics", "Track Progress", "Settings"].map((tab) => (
                 <button
