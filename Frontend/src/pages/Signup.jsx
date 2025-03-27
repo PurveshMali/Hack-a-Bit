@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-
+import axios from "axios"
 const Signup = ({ onSignup }) => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
@@ -63,31 +63,40 @@ const Signup = ({ onSignup }) => {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-
+    e.preventDefault();
+  
     if (!validateForm()) {
-      return
+      return;
     }
-
-    setIsLoading(true)
-
+  
+    setIsLoading(true);
+  
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Call the signup function from props
-      onSignup()
-
+      const response = await axios.post("http://localhost:5000/api/auth/register", {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+  
+      console.log("Registration successful:", response.data);
+  
+      // Call the signup function from props (if needed)
+      if (onSignup) {
+        onSignup();
+      }
+  
       // Redirect to dashboard
-      navigate("/dashboard")
+      navigate("/dashboard");
     } catch (error) {
+      console.error("Signup error:", error.response?.data || error.message);
       setErrors({
-        form: "An error occurred during signup. Please try again.",
-      })
+        form: error.response?.data?.message || "An error occurred during signup. Please try again.",
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black px-4 sm:px-6 lg:px-8 relative overflow-hidden">
