@@ -80,13 +80,11 @@ const Signup = ({ onSignup }) => {
   
       console.log("Registration successful:", response.data);
   
-      // Call the signup function from props (if needed)
-      if (onSignup) {
+
         onSignup();
-      }
   
       // Redirect to dashboard
-      navigate("/dashboard");
+      navigate("/login");
     } catch (error) {
       console.error("Signup error:", error.response?.data || error.message);
       setErrors({

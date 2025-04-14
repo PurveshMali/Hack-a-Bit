@@ -424,9 +424,9 @@ const LandingPage = () => {
         className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-pink-500/20 via-blue-500/20 to-green-500/20 backdrop-blur-sm relative z-10"
       >
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="animate-cta text-3xl md:text-4xl font-bold mb-6">Ready to Transform Your Academic Journey?</h2>
+          <h2 className="animate-cta text-3xl md:text-4xl font-bold mb-6">Ready to connect to Officers to reduce efforts</h2>
           <p className="animate-cta text-xl text-gray-300 mb-8">
-            Join thousands of students who have already improved their grades and study habits.
+            Register and complaints.
           </p>
           <div className="animate-cta">
             <Link

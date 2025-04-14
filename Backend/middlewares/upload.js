@@ -35,3 +35,4 @@ module.exports = multer({
   fileFilter,
   limits: { fileSize: 50 * 1024 * 1024 } // Limit file size to 5MB
 });
+

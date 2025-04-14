@@ -3,18 +3,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Loader, Loader2 } from "lucide-react";
+import axios from "axios";
 
 const ComplaintForm = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     address: "",
-    mobileNumber: "",  // Changed from mobile to mobileNumber
+    mobileNumber: "",
     natureOfIssue: "",
     description: "",
     daysToResolve: "",
-    photo: null,
-    supportingDocuments: null,
+    problemImage: null, // ✅ renamed
+    supportingDocument: null, // ✅ renamed
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -46,19 +48,29 @@ const ComplaintForm = () => {
       }
     });
 
+    const token = localStorage.getItem("token");
+    console.log("Token:", token);
     try {
-      const response = await fetch("http://localhost:5000/api/complaints/submit", {
-        method: "POST",
-        body: formDataToSend,
-      });
+      console.log("Form data to send:", formData);
 
-      if (!response.ok) {
+      const response = await axios.post(
+        "http://localhost:5000/api/complaints/submit",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },          
+        }
+      );
+
+      if (response.status !== 201) {
         throw new Error("Failed to submit complaint. Please try again.");
       }
 
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
@@ -76,33 +88,119 @@ const ComplaintForm = () => {
         </h2>
         {error && <p className="text-red-500 text-center">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Your Name" required className="w-full p-3 rounded-lg bg-gray-700/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <input type="text" name="address" value={formData.address} onChange={handleChange} placeholder="Your Address" required className="w-full p-3 rounded-lg bg-gray-700/50 text-white placeholder-gray-400" />
-          <input type="tel" name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} placeholder="Mobile Number" required className="w-full p-3 rounded-lg bg-gray-700/50 text-white placeholder-gray-400" />
-          <select name="natureOfIssue" value={formData.natureOfIssue} onChange={handleChange} required className="w-full p-3 rounded-lg bg-gray-700/50 text-white">
+          <input
+            type="text"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder="Your Name"
+            required
+            className="w-full p-3 rounded-lg bg-gray-700/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="text"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            placeholder="Your Address"
+            required
+            className="w-full p-3 rounded-lg bg-gray-700/50 text-white placeholder-gray-400"
+          />
+          <input
+            type="tel"
+            name="mobileNumber"
+            value={formData.mobileNumber}
+            onChange={handleChange}
+            placeholder="Mobile Number"
+            required
+            className="w-full p-3 rounded-lg bg-gray-700/50 text-white placeholder-gray-400"
+          />
+          <select
+            name="natureOfIssue"
+            value={formData.natureOfIssue}
+            onChange={handleChange}
+            required
+            className="w-full p-3 rounded-lg bg-gray-700/50 text-white"
+          >
             <option value="">Select Complaint Category</option>
             <option value="Water Supply Issue">Water Supply Issue</option>
             <option value="Garbage Accommodation">Garbage Accommodation</option>
             <option value="Road Obstruction">Road Obstruction</option>
-            <option value="Fire and Electrical Hazards">Fire and Electrical Hazards</option>
+            <option value="Fire and Electrical Hazards">
+              Fire and Electrical Hazards
+            </option>
             <option value="Dead Animal Removal">Dead Animal Removal</option>
             <option value="Road Damage">Road Damage</option>
-            <option value="Street Light Malfunction">Street Light Malfunction</option>
+            <option value="Street Light Malfunction">
+              Street Light Malfunction
+            </option>
             <option value="Illegal Dumping Waste">Illegal Dumping Waste</option>
-            <option value="Public Toilet Maintenance Issue">Public Toilet Maintenance Issue</option>
+            <option value="Public Toilet Maintenance Issue">
+              Public Toilet Maintenance Issue
+            </option>
             <option value="Drainage Issue">Drainage Issue</option>
-            <option value="Tree Trimming / Fallen Branches">Tree Trimming / Fallen Branches</option>
-            <option value="Public Park and Playground Maintenance">Public Park and Playground Maintenance</option>
-            <option value="Public Transport Issue">Public Transport Issue</option>
+            <option value="Tree Trimming / Fallen Branches">
+              Tree Trimming / Fallen Branches
+            </option>
+            <option value="Public Park and Playground Maintenance">
+              Public Park and Playground Maintenance
+            </option>
+            <option value="Public Transport Issue">
+              Public Transport Issue
+            </option>
           </select>
-          <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Describe the issue..." required className="w-full p-3 rounded-lg bg-gray-700/50 text-white placeholder-gray-400"></textarea>
-          <input type="number" name="daysToResolve" value={formData.daysToResolve} onChange={handleChange} placeholder="Expected days to resolve" required className="w-full p-3 rounded-lg bg-gray-700/50 text-white" />
-          <label className="block text-gray-400">Upload Problem Photo (Optional)</label>
-          <input type="file" name="photo" accept="image/*" onChange={handleFileChange} className="w-full text-gray-300 bg-gray-700/50 p-2 rounded-lg" />
-          <label className="block text-gray-400">Upload Supporting Document (Aadhar Card)</label>
-          <input type="file" name="supportingDocuments" accept="application/pdf, image/*" onChange={handleFileChange} className="w-full text-gray-300 bg-gray-700/50 p-2 rounded-lg" />
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit" disabled={loading} className="w-full bg-gradient-to-r from-pink-500 to-blue-500 px-4 py-3 rounded-lg text-lg font-medium shadow-md hover:shadow-xl transition-all">
-            {loading ? "Submitting..." : "Submit Complaint"}
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Describe the issue..."
+            required
+            className="w-full p-3 rounded-lg bg-gray-700/50 text-white placeholder-gray-400"
+          ></textarea>
+          <input
+            type="number"
+            name="daysToResolve"
+            value={formData.daysToResolve}
+            onChange={handleChange}
+            placeholder="Expected days to resolve"
+            required
+            className="w-full p-3 rounded-lg bg-gray-700/50 text-white"
+          />
+
+          <label className="block text-gray-400">
+            Upload Problem Photo (Optional)
+          </label>
+          <input
+            type="file"
+            name="problemImage" // ✅ fixed name
+            accept="image/*"
+            onChange={handleFileChange}
+            className="w-full text-gray-300 bg-gray-700/50 p-2 rounded-lg"
+          />
+
+          <label className="block text-gray-400">
+            Upload Supporting Document (Aadhar Card)
+          </label>
+          <input
+            type="file"
+            name="supportingDocument" // ✅ fixed name
+            accept="image/*"
+            onChange={handleFileChange}
+            className="w-full text-gray-300 bg-gray-700/50 p-2 rounded-lg"
+          />
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            type="submit"
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-pink-500 to-blue-500 px-4 py-3 rounded-lg text-lg font-medium shadow-md hover:shadow-xl transition-all"
+          >
+            {loading ? (
+              <Loader className="align-middle" size={20} animate={{ rotate: 360 }} color="white" />
+            ) : (
+              "Submit Complaint"
+            )}
           </motion.button>
         </form>
       </motion.div>
