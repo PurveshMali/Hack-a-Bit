@@ -2,7 +2,7 @@
 
 import { Brain, Cuboid, Pen } from "lucide-react";
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Navbar = ({ isAuthenticated, onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,6 +12,13 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
   if (location.pathname === "/login" || location.pathname === "/signup") {
     return null;
   }
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    onLogout();
+    navigate("/");
+  };
 
   return (
     <nav className="bg-black/50 border-b border-gray-800 backdrop-blur-sm text-white fixed w-full z-50">
@@ -41,7 +48,7 @@ const Navbar = ({ isAuthenticated, onLogout }) => {
                     Dashboard
                   </Link>
                   <button
-                    onClick={onLogout}
+                    onClick={handleLogout}
                     className="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-900 hover:text-white"
                   >
                     Logout

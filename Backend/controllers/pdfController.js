@@ -10,8 +10,7 @@ const generatePDF = async (complaint) => {
 
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-
-  // 📝 Updated HTML Template with Signatures
+//Update the html document to PDF
   const htmlContent = `
   <html>
   <head>

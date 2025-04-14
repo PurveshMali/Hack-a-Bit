@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Login = ({ onLogin }) => {
   const navigate = useNavigate();
@@ -46,6 +47,7 @@ const Login = ({ onLogin }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -56,13 +58,24 @@ const Login = ({ onLogin }) => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        {
+          email: formData.email,
+          password: formData.password,
+        }
+      );
 
-      // Call the login function from props
+      const { token, user } = response.data;
+
+      console.log("Login successful:", response.data);
+      // Store data in localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("isAuthenticated", "true");
+
       onLogin();
 
-      // Redirect to dashboard
       navigate("/dashboard");
     } catch (error) {
       setErrors({

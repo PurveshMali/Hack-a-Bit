@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const User = require("../models/User"); // Import User model
+const verifyToken = require("../middlewares/verifyToken"); // Import verifyToken middleware
 
 const router = express.Router();
 
@@ -12,7 +13,9 @@ const authenticateToken = (req, res, next) => {
   const token = authHeader && authHeader.split(" ")[1]; // Extract token from "Bearer <token>"
 
   if (!token) {
-    return res.status(401).json({ message: "Access denied. No token provided." });
+    return res
+      .status(401)
+      .json({ message: "Access denied. No token provided." });
   }
 
   jwt.verify(token, process.env.JWT_SECRET || "secret", (err, user) => {
@@ -46,7 +49,9 @@ router.post("/register", async (req, res) => {
     const newUser = new User({ name, email, password: hashedPassword });
     await newUser.save();
 
-    res.status(201).json({ message: "User registered successfully", user: { name, email } });
+    res
+      .status(201)
+      .json({ message: "User registered successfully", user: { name, email } });
   } catch (error) {
     res.status(500).json({ message: "Error registering user" });
   }
@@ -77,25 +82,44 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       { userId: user._id, email: user.email, name: user.name },
       process.env.JWT_SECRET || "secret",
-      { expiresIn: "1h" }
+      { expiresIn: "24h" }
     );
 
-    res.json({ message: "Login successful", token, user: { name: user.name, email: user.email } });
+    // Set cookies
+    res.cookie("token", token, { httpOnly: true }); // Set token in cookies for secure access
+    res.cookie("userId", user._id, { httpOnly: true }); // Set user ID in cookies for secure access
+    res.cookie("isAuthenticated", true, { httpOnly: true }); // Set authentication status ins cookies
+
+    res.json({
+      message: "Login successful",
+      token,
+      user: { name: user.name, email: user.email },
+    });
   } catch (error) {
     res.status(500).json({ message: "Error logging in" });
   }
 });
 
 // Profile Route (Protected)
-router.get("/profile", authenticateToken, async (req, res) => {
+router.get("/me", verifyToken, async (req, res) => {
   try {
-    // Find user from MongoDB using ID stored in token
-    const user = await User.findById(req.user.userId).select("-password"); // Exclude password
-
-    res.json({ message: "User Profile", user });
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching profile" });
+    const user = await User.findById(req.user.userId).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
+});
+
+// Logout Route
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", { httpOnly: true });
+  res.clearCookie("userId", { httpOnly: true });
+  res.clearCookie("isAuthenticated", { httpOnly: true });
+
+  return res.status(200).json({ message: "Logout successful" });
 });
 
 module.exports = router;
